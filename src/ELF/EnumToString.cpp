@@ -35,13 +35,19 @@ const char* to_string(SYMBOL_BINDINGS e) {
 
 
 const char* to_string(E_TYPE e) {
-  CONST_MAP(E_TYPE, const char*, 7) enumStrings {
+  CONST_MAP(E_TYPE, const char*, 13) enumStrings {
     { E_TYPE::ET_NONE,   "NONE" },
     { E_TYPE::ET_REL,    "RELOCATABLE" },
     { E_TYPE::ET_EXEC,   "EXECUTABLE" },
     { E_TYPE::ET_DYN,    "DYNAMIC" },
     { E_TYPE::ET_CORE,   "CORE" },
     { E_TYPE::ET_LOPROC, "LOPROC" },
+    { E_TYPE::ET_SCE_EXEC, "SCE_EXEC" },
+    { E_TYPE::ET_SCE_REPLAY_EXEC, "SCE_REPLAY_EXEC" },
+    { E_TYPE::ET_SCE_RELEXEC, "SCE_RELEXEC" },
+    { E_TYPE::ET_SCE_STUBLIB, "SCE_STUBLIB" },
+    { E_TYPE::ET_SCE_DYNEXEC, "SCE_DYNEXEC" },
+    { E_TYPE::ET_SCE_DYNAMIC, "SCE_DYNAMIC" },
     { E_TYPE::ET_HIPROC, "HIPROC" }
   };
   auto   it  = enumStrings.find(e);
@@ -242,7 +248,7 @@ const char* to_string(ARCH e) {
 }
 
 const char* to_string(SEGMENT_TYPES e) {
-  CONST_MAP(SEGMENT_TYPES, const char*, 20) enumStrings {
+  CONST_MAP(SEGMENT_TYPES, const char*, 26) enumStrings {
     { SEGMENT_TYPES::PT_NULL,          "NULL" },
     { SEGMENT_TYPES::PT_LOAD,          "LOAD" },
     { SEGMENT_TYPES::PT_DYNAMIC,       "DYNAMIC" },
@@ -251,7 +257,6 @@ const char* to_string(SEGMENT_TYPES e) {
     { SEGMENT_TYPES::PT_SHLIB,         "SHLIB" },
     { SEGMENT_TYPES::PT_PHDR,          "PHDR" },
     { SEGMENT_TYPES::PT_TLS,           "TLS" },
-    { SEGMENT_TYPES::PT_LOOS,          "LOOS" },
     { SEGMENT_TYPES::PT_HIOS,          "HIOS" },
     { SEGMENT_TYPES::PT_LOPROC,        "LOPROC" },
     { SEGMENT_TYPES::PT_HIPROC,        "HIPROC" },
@@ -268,13 +273,20 @@ const char* to_string(SEGMENT_TYPES e) {
     //{ SEGMENT_TYPES::PT_MIPS_RTPROC,   "MIPS_RTPROC" },
     //{ SEGMENT_TYPES::PT_MIPS_OPTIONS,  "MIPS_OPTIONS" },
     //{ SEGMENT_TYPES::PT_MIPS_ABIFLAGS, "MIPS_ABIFLAGS" }
+    { SEGMENT_TYPES::PT_SCE_RELA,        "SCE_RELA" },
+    { SEGMENT_TYPES::PT_SCE_DYNLIBDATA,  "SCE_DYNLIBDATA" },
+    { SEGMENT_TYPES::PT_SCE_PROCPARAM,   "SCE_PROCPARAM" },
+    { SEGMENT_TYPES::PT_SCE_MODULEPARAM, "SCE_MODULEPARAM" },
+    { SEGMENT_TYPES::PT_SCE_RELRO,       "SCE_RELRO" },
+    { SEGMENT_TYPES::PT_SCE_COMMENT,     "SCE_COMMENT" },
+    { SEGMENT_TYPES::PT_SCE_LIBVERSION,  "SCE_LIBVERSION" },
   };
   auto   it  = enumStrings.find(e);
   return it == enumStrings.end() ? "UNDEFINED" : it->second;
 }
 
 const char* to_string(DYNAMIC_TAGS e) {
-  CONST_MAP(DYNAMIC_TAGS, const char*, 87) enumStrings {
+  CONST_MAP(DYNAMIC_TAGS, const char*, 116) enumStrings {
     { DYNAMIC_TAGS::DT_NULL,                       "NULL"},
     { DYNAMIC_TAGS::DT_NEEDED,                     "NEEDED"},
     { DYNAMIC_TAGS::DT_PLTRELSZ,                   "PLTRELSZ"},
@@ -362,7 +374,37 @@ const char* to_string(DYNAMIC_TAGS e) {
     { DYNAMIC_TAGS::DT_MIPS_GP_VALUE,              "MIPS_GP_VALUE"},
     { DYNAMIC_TAGS::DT_MIPS_AUX_DYNAMIC,           "MIPS_AUX_DYNAMIC"},
     { DYNAMIC_TAGS::DT_MIPS_PLTGOT,                "MIPS_PLTGOT"},
-    { DYNAMIC_TAGS::DT_MIPS_RWPLT,                 "MIPS_RWPLT"}
+    { DYNAMIC_TAGS::DT_MIPS_RWPLT,                 "MIPS_RWPLT"},
+    { DYNAMIC_TAGS::DT_SCE_IDTABENTSZ,             "SCE_IDTABENTSZ"},
+    { DYNAMIC_TAGS::DT_SCE_FINGERPRINT,            "SCE_FINGERPRINT"},
+    { DYNAMIC_TAGS::DT_SCE_ORIGINAL_FILENAME,      "SCE_ORIGINAL_FILENAME"},
+    { DYNAMIC_TAGS::DT_SCE_MODULE_INFO,            "SCE_MODULE_INFO"},
+    { DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE,          "SCE_NEEDED_MODULE"},
+    { DYNAMIC_TAGS::DT_SCE_MODULE_ATTR,            "SCE_MODULE_ATTR"},
+    { DYNAMIC_TAGS::DT_SCE_EXPORT_LIB,             "SCE_EXPORT_LIB"},
+    { DYNAMIC_TAGS::DT_SCE_IMPORT_LIB,             "SCE_IMPORT_LIB"},
+    { DYNAMIC_TAGS::DT_SCE_EXPORT_LIB_ATTR,        "SCE_EXPORT_LIB_ATTR"},
+    { DYNAMIC_TAGS::DT_SCE_IMPORT_LIB_ATTR,        "SCE_IMPORT_LIB_ATTR"},
+    { DYNAMIC_TAGS::DT_SCE_STUB_MODULE_NAME,       "SCE_STUB_MODULE_NAME"},
+    { DYNAMIC_TAGS::DT_SCE_STUB_MODULE_VERSION,    "SCE_STUB_MODULE_VERSION"},
+    { DYNAMIC_TAGS::DT_SCE_STUB_LIBRARY_NAME,      "SCE_STUB_LIBRARY_NAME"},
+    { DYNAMIC_TAGS::DT_SCE_STUB_LIBRARY_VERSION,   "SCE_STUB_LIBRARY_VERSION"},
+    { DYNAMIC_TAGS::DT_SCE_HASH,                   "SCE_HASH"},
+    { DYNAMIC_TAGS::DT_SCE_PLTGOT,                 "SCE_PLTGOT"},
+    { DYNAMIC_TAGS::DT_SCE_JMPREL,                 "SCE_JMPREL"},
+    { DYNAMIC_TAGS::DT_SCE_PLTREL,                 "SCE_PLTREL"},
+    { DYNAMIC_TAGS::DT_SCE_PLTRELSZ,               "SCE_PLTRELSZ"},
+    { DYNAMIC_TAGS::DT_SCE_RELA,                   "SCE_RELA"},
+    { DYNAMIC_TAGS::DT_SCE_RELASZ,                 "SCE_RELASZ"},
+    { DYNAMIC_TAGS::DT_SCE_RELAENT,                "SCE_RELAENT"},
+    { DYNAMIC_TAGS::DT_SCE_STRTAB,                 "SCE_STRTAB"},
+    { DYNAMIC_TAGS::DT_SCE_STRSZ,                  "SCE_STRSZ"},
+    { DYNAMIC_TAGS::DT_SCE_SYMTAB,                 "SCE_SYMTAB"},
+    { DYNAMIC_TAGS::DT_SCE_SYMENT,                 "SCE_SYMENT"},
+    { DYNAMIC_TAGS::DT_SCE_HASHSZ,                 "SCE_HASHSZ"},
+    { DYNAMIC_TAGS::DT_SCE_SYMTABSZ,               "SCE_SYMTABSZ"},
+    { DYNAMIC_TAGS::DT_SCE_HIOS,                   "SCE_HIOS"},
+
   };
   auto   it  = enumStrings.find(e);
   return it == enumStrings.end() ? "UNDEFINED" : it->second;

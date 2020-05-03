@@ -23,6 +23,12 @@ enum _LIEF_EN(E_TYPE) {
   _LIEF_EI(ET_DYN)    = 3,      /**< Shared object file */
   _LIEF_EI(ET_CORE)   = 4,      /**< Core file */
   _LIEF_EI(ET_LOPROC) = 0xff00, /**< Beginning of processor-specific codes */
+  _LIEF_EI(ET_SCE_EXEC)                       = 0xFE00,
+  _LIEF_EI(ET_SCE_REPLAY_EXEC)                = 0xFE01,
+  _LIEF_EI(ET_SCE_RELEXEC)                    = 0XFE04,
+  _LIEF_EI(ET_SCE_STUBLIB)                    = 0xFE0C,
+  _LIEF_EI(ET_SCE_DYNEXEC)                    = 0xFE10,
+  _LIEF_EI(ET_SCE_DYNAMIC)                    = 0xFE18,
   _LIEF_EI(ET_HIPROC) = 0xffff  /**< Processor-specific */
 };
 
@@ -593,7 +599,13 @@ enum _LIEF_EN(SEGMENT_TYPES) {
   _LIEF_EI(PT_SHLIB)         = 5,          /**< Reserved. */
   _LIEF_EI(PT_PHDR)          = 6,          /**< The program header table itself. */
   _LIEF_EI(PT_TLS)           = 7,          /**< The thread-local storage template. */
-  _LIEF_EI(PT_LOOS)          = 0x60000000, /**< Lowest operating system-specific pt entry type. */
+  _LIEF_EI(PT_SCE_RELA)        = 0x60000000, /**< Lowest operating system-specific pt entry type. */
+  _LIEF_EI(PT_SCE_DYNLIBDATA)  = 0x61000000,
+  _LIEF_EI(PT_SCE_PROCPARAM)   = 0x61000001,
+  _LIEF_EI(PT_SCE_MODULEPARAM) = 0x61000002,
+  _LIEF_EI(PT_SCE_RELRO)       = 0x61000010,
+  _LIEF_EI(PT_SCE_COMMENT)     = 0X6FFFFF00,
+  _LIEF_EI(PT_SCE_LIBVERSION)  = 0X6FFFFF01,
   _LIEF_EI(PT_HIOS)          = 0x6fffffff, /**< Highest operating system-specific pt entry type. */
   _LIEF_EI(PT_LOPROC)        = 0x70000000, /**< Lowest processor-specific program hdr entry type. */
   _LIEF_EI(PT_HIPROC)        = 0x7fffffff, /**< Highest processor-specific program hdr entry type. */
@@ -673,6 +685,37 @@ enum _LIEF_EN(DYNAMIC_TAGS) {
   _LIEF_EI(DT_PREINIT_ARRAYSZ)            = 33,         /**< Size of the DT_PREINIT_ARRAY array. */
 
   _LIEF_EI(DT_LOOS)                       = 0x60000000, /**< Start of environment specific tags. */
+
+  _LIEF_EI(DT_SCE_IDTABENTSZ)                       = 0x61000005,
+  _LIEF_EI(DT_SCE_FINGERPRINT)                       = 0x61000007,
+  _LIEF_EI(DT_SCE_ORIGINAL_FILENAME)                       = 0x61000009,
+  _LIEF_EI(DT_SCE_MODULE_INFO)                       = 0x6100000D,
+  _LIEF_EI(DT_SCE_NEEDED_MODULE)                       = 0x6100000F,
+  _LIEF_EI(DT_SCE_MODULE_ATTR)                       = 0x61000011,
+  _LIEF_EI(DT_SCE_EXPORT_LIB)                       = 0x61000013,
+  _LIEF_EI(DT_SCE_IMPORT_LIB)                       = 0x61000015,
+  _LIEF_EI(DT_SCE_EXPORT_LIB_ATTR)                       = 0x61000017,
+  _LIEF_EI(DT_SCE_IMPORT_LIB_ATTR)                       = 0x61000019,
+  _LIEF_EI(DT_SCE_STUB_MODULE_NAME)                       = 0x6100001D,
+  _LIEF_EI(DT_SCE_STUB_MODULE_VERSION)                       = 0x6100001F,
+  _LIEF_EI(DT_SCE_STUB_LIBRARY_NAME)                       = 0x61000021,
+  _LIEF_EI(DT_SCE_STUB_LIBRARY_VERSION)                       = 0x61000023,
+  _LIEF_EI(DT_SCE_HASH)                       = 0x61000025,
+  _LIEF_EI(DT_SCE_PLTGOT)                       = 0x61000027,
+  _LIEF_EI(DT_SCE_JMPREL)                       = 0x61000029,
+  _LIEF_EI(DT_SCE_PLTREL)                       = 0x6100002B,
+  _LIEF_EI(DT_SCE_PLTRELSZ)                       = 0x6100002D,
+  _LIEF_EI(DT_SCE_RELA)                       = 0x6100002F,
+  _LIEF_EI(DT_SCE_RELASZ)                       = 0x61000031,
+  _LIEF_EI(DT_SCE_RELAENT)                       = 0x61000033,
+  _LIEF_EI(DT_SCE_STRTAB)                       = 0x61000035,
+  _LIEF_EI(DT_SCE_STRSZ)                       = 0x61000037,
+  _LIEF_EI(DT_SCE_SYMTAB)                       = 0x61000039,
+  _LIEF_EI(DT_SCE_SYMENT)                       = 0x6100003B,
+  _LIEF_EI(DT_SCE_HASHSZ)                       = 0x6100003D,
+  _LIEF_EI(DT_SCE_SYMTABSZ)                       = 0x6100003F,
+  _LIEF_EI(DT_SCE_HIOS)                       = 0X6FFFF000,
+
   _LIEF_EI(DT_HIOS)                       = 0x6FFFFFFF, /**< End of environment specific tags. */
   _LIEF_EI(DT_LOPROC)                     = 0x70000000, /**< Start of processor specific tags. */
   _LIEF_EI(DT_HIPROC)                     = 0x7FFFFFFF, /**< End of processor specific tags. */
