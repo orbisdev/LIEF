@@ -127,6 +127,8 @@ class LIEF_API Parser : public LIEF::Parser {
 
     uint64_t get_dynamic_string_table_from_sections(void) const;
 
+    uint64_t get_dynamic_string_table_from_sce(void) const;
+
     //! @brief Return the number of dynamic symbols using the given method
     template<typename ELF_T>
     uint32_t get_numberof_dynamic_symbols(DYNSYM_COUNT_METHODS mtd) const;

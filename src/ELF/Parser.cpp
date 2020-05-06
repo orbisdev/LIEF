@@ -188,6 +188,71 @@ void Parser::parse_symbol_version(uint64_t symbol_version_offset) {
   }
 }
 
+uint64_t Parser::get_dynamic_string_table_from_sce(void) const {
+  //find DYNAMIC segment
+  auto&& it_segment_dynamic = std::find_if(
+      std::begin(this->binary_->segments_),
+      std::end(this->binary_->segments_),
+      [] (const Segment* segment)
+      {
+        return segment != nullptr and segment->type() == SEGMENT_TYPES::PT_DYNAMIC;
+      });
+
+  if (it_segment_dynamic == std::end(this->binary_->segments_)) {
+    return 0;
+  }
+
+  auto&& it_segment_sce_dynamic = std::find_if(
+      std::begin(this->binary_->segments_),
+      std::end(this->binary_->segments_),
+      [] (const Segment* segment)
+      {
+        return segment != nullptr and segment->type() == SEGMENT_TYPES::PT_SCE_DYNLIBDATA;
+      });
+
+  if (it_segment_sce_dynamic == std::end(this->binary_->segments_)) {
+    return 0;
+  }
+
+  uint64_t offset = (*it_segment_dynamic)->file_offset();
+  uint64_t size   = (*it_segment_dynamic)->physical_size();
+  uint64_t sce_offset = (*it_segment_sce_dynamic)->file_offset();
+
+  this->stream_->setpos(offset);
+
+  if (this->binary_->type_ == ELF_CLASS::ELFCLASS32) {
+
+    size_t nb_entries = size / sizeof(Elf32_Dyn);
+
+    for (size_t i = 0; i < nb_entries; ++i) {
+      if (not this->stream_->can_read<Elf32_Dyn>()) {
+        return 0;
+      }
+      const Elf32_Dyn e = this->stream_->read_conv<Elf32_Dyn>();
+
+      if (static_cast<DYNAMIC_TAGS>(e.d_tag) == DYNAMIC_TAGS::DT_SCE_STRTAB) {
+        return sce_offset + e.d_un.d_val;
+      }
+    }
+
+  } else {
+    size_t nb_entries = size / sizeof(Elf64_Dyn);
+    for (size_t i = 0; i < nb_entries; ++i) {
+
+      if (not this->stream_->can_read<Elf64_Dyn>()) {
+        return 0;
+      }
+      const Elf64_Dyn e = this->stream_->read_conv<Elf64_Dyn>();
+
+      if (static_cast<DYNAMIC_TAGS>(e.d_tag) == DYNAMIC_TAGS::DT_SCE_STRTAB) {
+        return sce_offset + e.d_un.d_val;
+      }
+    }
+  }
+
+
+  return 0;
+}
 
 uint64_t Parser::get_dynamic_string_table_from_segments(void) const {
   //find DYNAMIC segment
@@ -265,6 +330,9 @@ uint64_t Parser::get_dynamic_string_table(void) const {
   uint64_t offset = this->get_dynamic_string_table_from_segments();
   if (offset == 0) {
     offset = this->get_dynamic_string_table_from_sections();
+    if(offset == 0) {
+      offset = this->get_dynamic_string_table_from_sce();
+    }
   }
   CHECK_NE(offset, 0);
   return offset;

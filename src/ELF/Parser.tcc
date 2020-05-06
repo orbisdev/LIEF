@@ -68,6 +68,14 @@ void Parser::parse_binary(void) {
   // Parse Dynamic elements
   // ======================
 
+  // Find the PT_SCE_DYNLIBDATA
+  auto&& it_segment_dynlibdata = std::find_if(
+      std::begin(this->binary_->segments_),
+      std::end(this->binary_->segments_),
+      [] (const Segment* segment) {
+        return segment != nullptr and segment->type() == SEGMENT_TYPES::PT_SCE_DYNLIBDATA;
+      });
+
   // Find the dynamic Segment
   auto&& it_segment_dynamic = std::find_if(
       std::begin(this->binary_->segments_),
@@ -81,10 +89,20 @@ void Parser::parse_binary(void) {
     const Elf_Off offset = (*it_segment_dynamic)->file_offset();
     const Elf_Off size   = (*it_segment_dynamic)->physical_size();
 
-    try {
-      this->parse_dynamic_entries<ELF_T>(offset, size);
-    } catch (const exception& e) {
-      LOG(WARNING) << e.what();
+    if(it_segment_dynlibdata != std::end(this->binary_->segments_)) {
+      const Elf_Off sce_offset = (*it_segment_dynlibdata)->file_offset();
+      try {
+                this->parse_dynamic_entries<ELF_T>(offset, size);
+//this->parse_dynamic_sce_entries<ELF_T>(offset, size, sce_offset);
+      } catch (const exception& e) {
+        LOG(WARNING) << e.what();
+      }
+    } else {
+      try {
+        this->parse_dynamic_entries<ELF_T>(offset, size);
+      } catch (const exception& e) {
+        LOG(WARNING) << e.what();
+      }
     }
   }
 
@@ -95,14 +113,14 @@ void Parser::parse_binary(void) {
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SYMTAB;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_SYMTAB;
       });
 
   auto&& it_dynamic_symbol_size = std::find_if(
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SYMENT;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_SYMENT;
       });
 
   if (it_dynamic_symbol_table != std::end(this->binary_->dynamic_entries_) and
@@ -110,7 +128,8 @@ void Parser::parse_binary(void) {
     const uint64_t virtual_address = (*it_dynamic_symbol_table)->value();
     //const uint64_t size            = (*it_dynamic_symbol_size)->value();
     try {
-      const uint64_t offset = this->binary_->virtual_address_to_offset(virtual_address);
+      const Elf_Off sce_offset = (*it_segment_dynlibdata)->file_offset();
+      uint64_t offset = sce_offset + virtual_address; //this->binary_->virtual_address_to_offset(virtual_address);
       this->parse_dynamic_symbols<ELF_T>(offset);
     } catch (const LIEF::exception& e) {
       LOG(ERROR) << e.what();
@@ -126,14 +145,14 @@ void Parser::parse_binary(void) {
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_RELA;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_RELA;
       });
 
   auto&& it_dynamic_relocations_size = std::find_if(
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_RELASZ;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_RELASZ;
       });
 
   if (it_dynamic_relocations != std::end(this->binary_->dynamic_entries_) and
@@ -141,7 +160,8 @@ void Parser::parse_binary(void) {
     const uint64_t virtual_address = (*it_dynamic_relocations)->value();
     const uint64_t size            = (*it_dynamic_relocations_size)->value();
     try {
-      uint64_t offset = this->binary_->virtual_address_to_offset(virtual_address);
+      const Elf_Off sce_offset = (*it_segment_dynlibdata)->file_offset();
+      uint64_t offset = sce_offset + virtual_address;//(this->binary_->virtual_address_to_offset(virtual_address);
       this->parse_dynamic_relocations<ELF_T, typename ELF_T::Elf_Rela>(offset, size);
     } catch (const LIEF::exception& e) {
       LOG(ERROR) << e.what();
@@ -184,21 +204,21 @@ void Parser::parse_binary(void) {
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_JMPREL;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_JMPREL;
       });
 
   auto&& it_pltgot_relocations_size = std::find_if(
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_PLTRELSZ;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_PLTRELSZ;
       });
 
   auto&& it_pltgot_relocations_type = std::find_if(
       std::begin(this->binary_->dynamic_entries_),
       std::end(this->binary_->dynamic_entries_),
       [] (const DynamicEntry* entry) {
-        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_PLTREL;
+        return entry != nullptr and entry->tag() == DYNAMIC_TAGS::DT_SCE_PLTREL;
       });
 
   if (it_pltgot_relocations != std::end(this->binary_->dynamic_entries_) and
@@ -211,18 +231,18 @@ void Parser::parse_binary(void) {
     } else {
       // Try to guess: We assume that on ELF64 -> DT_RELA and on ELF32 -> DT_REL
       if (std::is_same<ELF_T, ELF64>::value) {
-        type = DYNAMIC_TAGS::DT_RELA;
+        type = DYNAMIC_TAGS::DT_SCE_RELA;
       } else {
         type = DYNAMIC_TAGS::DT_REL;
       }
     }
 
     try {
-      const uint64_t offset = this->binary_->virtual_address_to_offset(virtual_address);
-      if (type == DYNAMIC_TAGS::DT_RELA) {
-        this->parse_pltgot_relocations<ELF_T, typename ELF_T::Elf_Rela>(offset, size);
-      } else {
+      const uint64_t offset = (*it_segment_dynlibdata)->file_offset() + virtual_address;//this->binary_->virtual_address_to_offset(virtual_address);
+      if (type == DYNAMIC_TAGS::DT_REL) {
         this->parse_pltgot_relocations<ELF_T, typename ELF_T::Elf_Rel>(offset, size);
+      } else {
+        this->parse_pltgot_relocations<ELF_T, typename ELF_T::Elf_Rela>(offset, size);
       }
     } catch (const LIEF::exception& e) {
       LOG(WARNING) << e.what();
@@ -693,7 +713,7 @@ uint32_t Parser::nb_dynsym_section(void) const {
 template<typename ELF_T>
 uint32_t Parser::nb_dynsym_hash(void) const {
 
-  if (this->binary_->has(DYNAMIC_TAGS::DT_HASH)) {
+  if (this->binary_->has(DYNAMIC_TAGS::DT_SCE_HASH)) {
     return this->nb_dynsym_sysv_hash<ELF_T>();
   }
 
@@ -709,8 +729,9 @@ template<typename ELF_T>
 uint32_t Parser::nb_dynsym_sysv_hash(void) const {
   using Elf_Off  = typename ELF_T::Elf_Off;
 
-  const DynamicEntry& dyn_hash = this->binary_->get(DYNAMIC_TAGS::DT_HASH);
-  const Elf_Off sysv_hash_offset = this->binary_->virtual_address_to_offset(dyn_hash.value());
+  const DynamicEntry& dyn_hash = this->binary_->get(DYNAMIC_TAGS::DT_SCE_HASH);
+  const Segment& seg_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+  const Elf_Off sysv_hash_offset = seg_dynlibdata.file_offset() + dyn_hash.value();//this->binary_->virtual_address_to_offset(dyn_hash.value());
 
   // From the doc: 'so nchain should equal the number of symbol table entries.'
 
@@ -969,7 +990,7 @@ void Parser::parse_dynamic_relocations(uint64_t relocations_offset, uint64_t siz
   const uint8_t shift = std::is_same<ELF_T, ELF32>::value ? 8 : 32;
 
   uint32_t nb_entries = static_cast<uint32_t>(size / sizeof(REL_T));
-
+  
   nb_entries = std::min<uint32_t>(nb_entries, Parser::NB_MAX_RELOCATIONS);
 
   this->stream_->setpos(relocations_offset);
@@ -1101,9 +1122,13 @@ void Parser::parse_dynamic_entries(uint64_t offset, uint64_t size) {
 
     switch (static_cast<DYNAMIC_TAGS>(entry.d_tag)) {
       case DYNAMIC_TAGS::DT_NEEDED :
+      case DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE :
+      case DYNAMIC_TAGS::DT_SCE_IMPORT_LIB :
+      case DYNAMIC_TAGS::DT_SCE_MODULE_INFO :
+      case DYNAMIC_TAGS::DT_SCE_ORIGINAL_FILENAME :
         {
           dynamic_entry = std::unique_ptr<DynamicEntryLibrary>{new DynamicEntryLibrary{&entry}};
-          std::string library_name = this->stream_->peek_string_at(dynamic_string_offset + dynamic_entry->value());
+          std::string library_name = this->stream_->peek_string_at(dynamic_string_offset + dynamic_entry->value() & 0xFFFFFF);
           dynamic_entry->as<DynamicEntryLibrary>()->name(library_name);
           break;
         }
