@@ -156,9 +156,13 @@ DynamicEntry& Binary::add(const DynamicEntry& entry) {
 
   DynamicEntry* new_one = nullptr;
   switch (entry.tag()) {
-    case DYNAMIC_TAGS::DT_NEEDED:
+      case DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE:
+      case DYNAMIC_TAGS::DT_SCE_IMPORT_LIB:
+      case DYNAMIC_TAGS::DT_SCE_MODULE_INFO:
+      case DYNAMIC_TAGS::DT_NEEDED:
       {
         new_one = new DynamicEntryLibrary{*dynamic_cast<const DynamicEntryLibrary*>(&entry)};
+        new_one->tag(entry.tag());
         break;
       }
 
@@ -1178,12 +1182,14 @@ Segment& Binary::add(const Segment& segment, uint64_t base) {
 
   switch(this->header().file_type()) {
     case E_TYPE::ET_EXEC:
+    case E_TYPE::ET_SCE_EXEC:
       {
         return this->add_segment<E_TYPE::ET_EXEC>(segment, new_base);
         break;
       }
 
     case E_TYPE::ET_DYN:
+    case E_TYPE::ET_SCE_DYNAMIC:
       {
         return this->add_segment<E_TYPE::ET_DYN>(segment, new_base);
         break;
@@ -1887,7 +1893,7 @@ LIEF::Header Binary::get_abstract_header(void) const {
   header.modes(am.second);
   header.entrypoint(this->header().entrypoint());
 
-  if (this->header().file_type() == E_TYPE::ET_DYN and this->has_interpreter()) { // PIE
+  if ((this->header().file_type() == E_TYPE::ET_DYN or this->header().file_type() == E_TYPE::ET_SCE_DYNEXEC) and this->has_interpreter()) { // PIE
     header.object_type(OBJECT_TYPES::TYPE_EXECUTABLE);
   } else {
     header.object_type(this->header().abstract_object_type());

@@ -536,6 +536,9 @@ void Builder::build_dynamic_section(void) {
   for (DynamicEntry* entry : this->binary_->dynamic_entries_) {
 
     switch (entry->tag()) {
+      case DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE:
+      case DYNAMIC_TAGS::DT_SCE_IMPORT_LIB:
+      case DYNAMIC_TAGS::DT_SCE_MODULE_INFO:
       case DYNAMIC_TAGS::DT_NEEDED:
         {
           const std::string& name = entry->as<DynamicEntryLibrary>()->name();
@@ -544,7 +547,7 @@ void Builder::build_dynamic_section(void) {
               std::begin(name),
               std::end(name));
           dynamic_strings_raw.push_back(0);
-          entry->value(dynamic_strings_raw.size() - (name.size() + 1));
+          entry->value(entry->value() | (dynamic_strings_raw.size() - (name.size() + 1)));
           break;
         }
 
