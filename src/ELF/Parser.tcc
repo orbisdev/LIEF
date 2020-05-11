@@ -128,8 +128,8 @@ void Parser::parse_binary(void) {
     const uint64_t virtual_address = (*it_dynamic_symbol_table)->value();
     //const uint64_t size            = (*it_dynamic_symbol_size)->value();
     try {
-      const Elf_Off sce_offset = (*it_segment_dynlibdata)->file_offset();
-      uint64_t offset = sce_offset + virtual_address; //this->binary_->virtual_address_to_offset(virtual_address);
+      const Elf_Off sce_offset = (*it_segment_dynlibdata)->virtual_address();
+      uint64_t offset = this->binary_->virtual_address_to_offset(sce_offset + virtual_address);
       this->parse_dynamic_symbols<ELF_T>(offset);
     } catch (const LIEF::exception& e) {
       LOG(ERROR) << e.what();
