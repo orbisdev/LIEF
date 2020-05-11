@@ -645,6 +645,39 @@ void Builder::build_dynamic_section(void) {
           break;
         }
 
+      case DYNAMIC_TAGS::DT_SCE_STRTAB:
+        {
+          try
+          {
+            const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+            entry->value(this->binary_->get(DYNAMIC_TAGS::DT_STRTAB).value() - pt_dynlibdata.virtual_address());
+          }
+          catch(const std::exception& e)
+          {
+            std::cerr << e.what() << '\n';
+          }
+          break;
+
+        }
+      case DYNAMIC_TAGS::DT_SCE_STRSZ:
+        {
+          entry->value(this->binary_->get(DYNAMIC_TAGS::DT_STRSZ).value());
+          break;
+        }
+      case DYNAMIC_TAGS::DT_SCE_SYMTAB:
+        {
+          try
+          {
+            const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+            entry->value(this->binary_->get(DYNAMIC_TAGS::DT_SCE_SYMTAB).value() - pt_dynlibdata.virtual_address());
+          }
+          catch(const std::exception& e)
+          {
+            std::cerr << e.what() << '\n';
+          }
+          break;
+
+        }
       default:
         {
         }
@@ -701,7 +734,7 @@ void Builder::build_dynamic_section(void) {
 
     // Create a segment:
     Segment dynstr;
-    dynstr.type(SEGMENT_TYPES::PT_LOAD);
+    dynstr.type(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
     dynstr.flags(ELF_SEGMENT_FLAGS::PF_R);
     dynstr.content(dynamic_strings_raw);
 
@@ -715,7 +748,7 @@ void Builder::build_dynamic_section(void) {
     VLOG(VDEBUG) << std::dec << "New '.dynstr' size: " << dyn_strtab_section.size();
 
     this->binary_->get(DYNAMIC_TAGS::DT_STRTAB).value(new_segment.virtual_address());
-    this->binary_->get(DYNAMIC_TAGS::DT_STRSZ).value(new_segment.physical_size());
+    this->binary_->get(DYNAMIC_TAGS::DT_STRSZ).value(dynamic_strings_raw.size());
 
     return this->build_dynamic<ELF_T>();
   }

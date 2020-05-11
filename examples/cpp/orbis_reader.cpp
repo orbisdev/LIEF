@@ -192,6 +192,38 @@ int main(int argc, char **argv)
     }
   }
 
+  for (auto dynamic : binary->dynamic_entries())
+  {
+    switch (dynamic.tag())
+    {
+    case DYNAMIC_TAGS::DT_STRTAB:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_STRTAB);
+      binary->add(entry);
+      break;
+    }
+    case DYNAMIC_TAGS::DT_STRSZ:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_STRSZ);
+      binary->add(entry);
+      break;
+    }
+
+    case DYNAMIC_TAGS::DT_SYMTAB:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_SYMTAB);
+      binary->add(entry);
+      break;
+    }
+
+    default:
+      break;
+    }
+  }
+
   std::cout << *binary << std::endl;
 
   binary->write(argv[2]);
