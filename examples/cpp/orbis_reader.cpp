@@ -224,7 +224,9 @@ int main(int argc, char **argv)
     }
   }
 
+  
+  binary->write(argv[2]);
+  
   std::cout << *binary << std::endl;
 
-  binary->write(argv[2]);
 }
