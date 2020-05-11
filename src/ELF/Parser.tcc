@@ -1205,6 +1205,9 @@ void Parser::parse_dynamic_entries(uint64_t offset, uint64_t size) {
       LOG(WARNING) << "dynamic_entry is nullptr !";
     }
 
+    if(static_cast<DYNAMIC_TAGS>(entry.d_tag)==DYNAMIC_TAGS::DT_NULL)
+      break;
+
   }
 
   // Check for INIT array
