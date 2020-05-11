@@ -84,7 +84,7 @@ int main(int argc, char **argv)
   DynamicEntryLibrary sce_module_info_entry = {};
   sce_module_info_entry.tag(DYNAMIC_TAGS::DT_SCE_MODULE_INFO);
   sce_module_info_entry.name(elf_name);
-  sce_module_info_entry.value( (version_major * 0x1000000000000) | (version_minor * 0x10000000000));
+  sce_module_info_entry.value((version_major * 0x1000000000000) | (version_minor * 0x10000000000));
 
   binary->add(sce_module_info_entry);
 
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
       DynamicEntryLibrary sce_needed_entry = {};
       sce_needed_entry.tag(DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE);
       sce_needed_entry.name(module_name);
-      sce_needed_entry.value( (module_id * 0x1000000000000) | (module_major * 0x10000000000) | (module_minor * 0x100000000));
+      sce_needed_entry.value((module_id * 0x1000000000000) | (module_major * 0x10000000000) | (module_minor * 0x100000000));
       binary->add(sce_needed_entry);
 
       std::string library_name = stripped.substr(0, stripped.find("."));
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
       DynamicEntryLibrary sce_import_entry = {};
       sce_import_entry.tag(DYNAMIC_TAGS::DT_SCE_IMPORT_LIB);
       sce_import_entry.name(library_name);
-      sce_import_entry.value( (library_id * 0x1000000000000) | (library_major * 0x100000000));
+      sce_import_entry.value((library_id * 0x1000000000000) | (library_major * 0x100000000));
       binary->add(sce_import_entry);
 
       DynamicEntry sce_import_attr_entry = {};
