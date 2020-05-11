@@ -649,7 +649,7 @@ void Builder::build_dynamic_section(void) {
         {
           try
           {
-            const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+            const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_DYNAMIC);
             entry->value(this->binary_->get(DYNAMIC_TAGS::DT_STRTAB).value() - pt_dynlibdata.virtual_address());
           }
           catch(const std::exception& e)
@@ -668,8 +668,8 @@ void Builder::build_dynamic_section(void) {
         {
           try
           {
-            const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
-            entry->value(this->binary_->get(DYNAMIC_TAGS::DT_SCE_SYMTAB).value() - pt_dynlibdata.virtual_address());
+            const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_DYNAMIC);
+            entry->value(this->binary_->get(DYNAMIC_TAGS::DT_SYMTAB).value() - pt_dynlibdata.virtual_address());
           }
           catch(const std::exception& e)
           {
@@ -677,6 +677,11 @@ void Builder::build_dynamic_section(void) {
           }
           break;
 
+        }
+        case DYNAMIC_TAGS::DT_SCE_SYMENT:
+        {
+          entry->value(this->binary_->get(DYNAMIC_TAGS::DT_SYMENT).value());
+          break;
         }
       default:
         {
@@ -697,7 +702,7 @@ void Builder::build_dynamic_section(void) {
 
     // Create a LOAD segment for the new Dynamic:
     Segment dynamic_load;
-    dynamic_load.type(SEGMENT_TYPES::PT_LOAD);
+    dynamic_load.type(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
     dynamic_load.flags(ELF_SEGMENT_FLAGS::PF_R | ELF_SEGMENT_FLAGS::PF_W);
     dynamic_load.content(dynamic_table_raw.raw());
     Segment& new_dynamic_load = this->binary_->add(dynamic_load);
@@ -734,7 +739,7 @@ void Builder::build_dynamic_section(void) {
 
     // Create a segment:
     Segment dynstr;
-    dynstr.type(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+    dynstr.type(SEGMENT_TYPES::PT_LOAD);
     dynstr.flags(ELF_SEGMENT_FLAGS::PF_R);
     dynstr.content(dynamic_strings_raw);
 

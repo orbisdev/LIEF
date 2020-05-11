@@ -41,7 +41,6 @@ int main(int argc, char **argv)
   LIEF::Logger::set_verbose_level(LIEF::LOGGING_LEVEL::LOG_INFO);
 
   std::unique_ptr<LIEF::ELF::Binary> binary = LIEF::ELF::Parser::parse(argv[1]);
-  std::cout << *binary << std::endl;
 
   switch (binary->header().file_type())
   {
@@ -219,12 +218,20 @@ int main(int argc, char **argv)
       break;
     }
 
+    case DYNAMIC_TAGS::DT_SYMENT:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_SYMENT);
+      binary->add(entry);
+      break;
+    }
+
     default:
       break;
     }
   }
 
-  
+
   binary->write(argv[2]);
   
   std::cout << *binary << std::endl;
