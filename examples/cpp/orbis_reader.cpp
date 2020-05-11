@@ -9,7 +9,7 @@ using namespace LIEF::ELF;
 std::string encode_nid(uint64_t nVal, uint16_t library_id, uint16_t module_id)
 {
   const char pCodes[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-";
-  char encoded[11] = {0};
+  char encoded[16] = {0};
   encoded[0] = pCodes[nVal >> 58];
   encoded[1] = pCodes[(nVal >> 52) & 0x3F];
   encoded[2] = pCodes[(nVal >> 46) & 0x3F];
