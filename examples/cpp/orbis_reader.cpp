@@ -157,7 +157,7 @@ int main(int argc, char **argv)
         if (!symbol.name().empty() && symbol.value() >= section.virtual_address() && symbol.value() <= section.virtual_address() + section.size())
         {
           uint64_t nid = *(uint64_t *)binary->get_content_from_virtual_address(symbol.value(), sizeof(uint64_t)).data();
-          std::cout << symbol.demangled_name() << ":" << nid << std::endl;
+          std::cout << symbol.name() << ":" << nid << std::endl;
           auto old_name = symbol.name();
           symbol.name(encode_nid(nid, library_id, module_id));
           auto dynamic_symbol = binary->add_dynamic_symbol(symbol);
