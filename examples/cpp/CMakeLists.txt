@@ -5,7 +5,7 @@ set(LIEF_ELF_CPP_EXAMPLES
   elf_section_rename.cpp
   elf_strip.cpp
   elf_symbols.cpp
-  orbis_reader.cpp
+  orbis-elf-create.cpp
 )
 
 set(LIEF_PE_CPP_EXAMPLES
