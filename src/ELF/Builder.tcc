@@ -378,6 +378,8 @@ void Builder::build_segments(void) {
         has_sce_procparam = true;
         segment.type(SEGMENT_TYPES::PT_SCE_PROCPARAM);
         const Section sce_process_param = this->binary_->get_section(".sce_process_param");
+        segment.virtual_address(sce_process_param.virtual_address());
+        segment.virtual_size(sce_process_param.size());
         segment.file_offset(sce_process_param.file_offset());
         segment.physical_size(sce_process_param.size());
         continue;
