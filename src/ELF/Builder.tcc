@@ -380,8 +380,9 @@ void Builder::build_segments(void) {
         const Section sce_process_param = this->binary_->get_section(".sce_process_param");
         segment.virtual_address(sce_process_param.virtual_address());
         segment.virtual_size(sce_process_param.size());
-        segment.file_offset(sce_process_param.file_offset());
+        segment.physical_address(sce_process_param.virtual_address());
         segment.physical_size(sce_process_param.size());
+        segment.file_offset(sce_process_param.file_offset());
         continue;
       }
     }
@@ -393,6 +394,18 @@ void Builder::build_segments(void) {
         has_sce_relro = true;
       continue;
     }
+
+    if(segment.type()==SEGMENT_TYPES::PT_DYNAMIC){
+      segment.virtual_address(0);
+      segment.physical_address(0);
+  }
+
+    if(segment.type()==SEGMENT_TYPES::PT_SCE_DYNLIBDATA){
+      segment.virtual_address(0);
+      segment.physical_address(0);
+      segment.virtual_size(0);
+    }
+
   }
 
   for (const Segment* segment : this->binary_->segments_) {

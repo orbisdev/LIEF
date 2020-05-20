@@ -313,6 +313,7 @@ int main(int argc, char **argv)
   for(Segment& segment : binary->segments()){
     if(segment.virtual_address() == dynstr.virtual_address()){
       segment.type(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+      segment.alignment(0x8);
       break;
     }
   }
