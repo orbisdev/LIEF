@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   {
   case E_TYPE::ET_EXEC:
   {
-    binary->header().file_type(LIEF::ELF::E_TYPE::ET_EXEC);
+    binary->header().file_type(LIEF::ELF::E_TYPE::ET_SCE_DYNEXEC);
     break;
   }
   case E_TYPE::ET_DYN:

@@ -1189,6 +1189,7 @@ Segment& Binary::add(const Segment& segment, uint64_t base) {
       }
 
     case E_TYPE::ET_DYN:
+    case E_TYPE::ET_SCE_DYNEXEC:
     case E_TYPE::ET_SCE_DYNAMIC:
       {
         return this->add_segment<E_TYPE::ET_DYN>(segment, new_base);
