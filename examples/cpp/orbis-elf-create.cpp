@@ -22,9 +22,9 @@ std::string encode_nid(uint64_t nVal, uint16_t library_id, uint16_t module_id)
   encoded[9] = pCodes[(nVal >> 4) & 0x3F];
   encoded[10] = pCodes[4 * (nVal & 0xF)];
   encoded[11] = '#';
-  encoded[12] = pCodes[4 * (library_id & 0xF)];
+  encoded[12] = pCodes[(library_id)];
   encoded[13] = '#';
-  encoded[14] = pCodes[4 * (module_id & 0xF)];
+  encoded[14] = pCodes[(module_id)];
   encoded[15] = '\0';
 
   return std::string(encoded);
