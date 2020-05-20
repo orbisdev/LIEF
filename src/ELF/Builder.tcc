@@ -398,7 +398,7 @@ void Builder::build_segments(void) {
     if(segment.type()==SEGMENT_TYPES::PT_DYNAMIC){
       segment.virtual_address(0);
       segment.physical_address(0);
-  }
+    }
 
     if(segment.type()==SEGMENT_TYPES::PT_SCE_DYNLIBDATA){
       segment.virtual_address(0);
@@ -589,44 +589,6 @@ void Builder::build_dynamic_section(void) {
           entry->value((entry->value() & ~((uint64_t)0xFFF) )| (dynamic_strings_raw.size() - (name.size() + 1)));
           break;
         }
-
-      case DYNAMIC_TAGS::DT_SONAME:
-        {
-          const std::string& name = entry->as<DynamicSharedObject>()->name();
-          dynamic_strings_raw.insert(
-              std::end(dynamic_strings_raw),
-              std::begin(name),
-              std::end(name));
-          dynamic_strings_raw.push_back(0);
-          entry->value(dynamic_strings_raw.size() - (name.size() + 1));
-          break;
-        }
-
-      case DYNAMIC_TAGS::DT_RPATH:
-        {
-          const std::string& name = entry->as<DynamicEntryRpath>()->name();
-          dynamic_strings_raw.insert(
-              std::end(dynamic_strings_raw),
-              std::begin(name),
-              std::end(name));
-          dynamic_strings_raw.push_back(0);
-          entry->value(dynamic_strings_raw.size() - (name.size() + 1));
-          break;
-        }
-
-      case DYNAMIC_TAGS::DT_RUNPATH:
-        {
-          const std::string& name = entry->as<DynamicEntryRunPath>()->name();
-          dynamic_strings_raw.insert(
-              std::end(dynamic_strings_raw),
-              std::begin(name),
-              std::end(name));
-          dynamic_strings_raw.push_back(0);
-          entry->value(dynamic_strings_raw.size() - (name.size() + 1));
-          break;
-        }
-
-
       case DYNAMIC_TAGS::DT_FINI_ARRAY:
       case DYNAMIC_TAGS::DT_INIT_ARRAY:
       case DYNAMIC_TAGS::DT_PREINIT_ARRAY:
@@ -775,6 +737,21 @@ void Builder::build_dynamic_section(void) {
       {
           entry->value(this->binary_->get(DYNAMIC_TAGS::DT_RELAENT).value());
           break;
+      }
+      case DYNAMIC_TAGS::DT_SONAME:
+      case DYNAMIC_TAGS::DT_RPATH:
+      case DYNAMIC_TAGS::DT_RUNPATH:
+      case DYNAMIC_TAGS::DT_HASH:
+      case DYNAMIC_TAGS::DT_STRTAB:
+      case DYNAMIC_TAGS::DT_SYMTAB:
+      case DYNAMIC_TAGS::DT_STRSZ:
+      case DYNAMIC_TAGS::DT_SYMENT:
+      case DYNAMIC_TAGS::DT_RELA:
+      case DYNAMIC_TAGS::DT_RELASZ:
+      case DYNAMIC_TAGS::DT_RELAENT:
+      case DYNAMIC_TAGS::DT_RELACOUNT:
+      {
+        continue;
       }
       default:
         {
