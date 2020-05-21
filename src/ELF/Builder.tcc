@@ -738,6 +738,19 @@ void Builder::build_dynamic_section(void) {
           entry->value(this->binary_->get(DYNAMIC_TAGS::DT_RELAENT).value());
           break;
       }
+      case DYNAMIC_TAGS::DT_SCE_PLTGOT:
+      {
+        const Section& pltgot = this->binary_->get_section(".got.plt");
+        entry->value(pltgot.virtual_address());
+        break;
+      }
+      case DYNAMIC_TAGS::DT_SCE_JMPREL:
+      {
+        const Segment& pt_dynlibdata = this->binary_->get(SEGMENT_TYPES::PT_SCE_DYNLIBDATA);
+        const Section& jmprel = this->binary_->section_from_virtual_address(this->binary_->get(DYNAMIC_TAGS::DT_JMPREL).value());
+        entry->value(jmprel.file_offset() - pt_dynlibdata.file_offset());
+        break;
+      }
       case DYNAMIC_TAGS::DT_SONAME:
       case DYNAMIC_TAGS::DT_RPATH:
       case DYNAMIC_TAGS::DT_RUNPATH:
@@ -750,6 +763,10 @@ void Builder::build_dynamic_section(void) {
       case DYNAMIC_TAGS::DT_RELASZ:
       case DYNAMIC_TAGS::DT_RELAENT:
       case DYNAMIC_TAGS::DT_RELACOUNT:
+      case DYNAMIC_TAGS::DT_PLTGOT:
+      case DYNAMIC_TAGS::DT_PLTREL:
+      case DYNAMIC_TAGS::DT_PLTRELSZ:
+      case DYNAMIC_TAGS::DT_JMPREL:
       {
         continue;
       }

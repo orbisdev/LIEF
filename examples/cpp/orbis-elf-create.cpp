@@ -318,6 +318,13 @@ int main(int argc, char **argv)
     }
   }
 
+  if(binary->has_section(".got.plt")){
+    DynamicEntry entry;
+    entry.tag(DYNAMIC_TAGS::DT_SCE_PLTGOT);
+    entry.value(binary->get_section(".got.plt").virtual_address());
+    binary->add(entry);
+  }
+
   DynamicEntry entry;
   entry.tag(DYNAMIC_TAGS::DT_SCE_FINGERPRINT);
   entry.value(0);
@@ -388,6 +395,27 @@ int main(int argc, char **argv)
     {
       DynamicEntry entry(dynamic);
       entry.tag(DYNAMIC_TAGS::DT_SCE_RELAENT);
+      binary->add(entry);
+      break;
+    }
+    case DYNAMIC_TAGS::DT_PLTREL:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_PLTREL);
+      binary->add(entry);
+      break;
+    }
+    case DYNAMIC_TAGS::DT_PLTRELSZ:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_PLTRELSZ);
+      binary->add(entry);
+      break;
+    }
+    case DYNAMIC_TAGS::DT_JMPREL:
+    {
+      DynamicEntry entry(dynamic);
+      entry.tag(DYNAMIC_TAGS::DT_SCE_JMPREL);
       binary->add(entry);
       break;
     }
