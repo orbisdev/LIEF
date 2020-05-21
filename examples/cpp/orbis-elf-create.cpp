@@ -111,7 +111,7 @@ int main(int argc, char **argv)
   DynamicEntryLibrary sce_module_info_entry = {};
   sce_module_info_entry.tag(DYNAMIC_TAGS::DT_SCE_MODULE_INFO);
   sce_module_info_entry.name(elf_name);
-  sce_module_info_entry.value((version_major * 0x1000000000000) | (version_minor * 0x10000000000));
+  sce_module_info_entry.value((version_major * 0x10000000000) | (version_minor * 0x100000000));
 
   binary->add(sce_module_info_entry);
 
