@@ -318,6 +318,11 @@ int main(int argc, char **argv)
     }
   }
 
+  DynamicEntry entry;
+  entry.tag(DYNAMIC_TAGS::DT_SCE_FINGERPRINT);
+  entry.value(0);
+  binary->add(entry);
+
   for (auto dynamic : binary->dynamic_entries())
   {
     switch (dynamic.tag())
