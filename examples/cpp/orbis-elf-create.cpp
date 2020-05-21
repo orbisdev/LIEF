@@ -279,7 +279,7 @@ int main(int argc, char **argv)
   }
 
     
-    for(Symbol& dyn_symbol : binary->dynamic_symbols()){
+    for(Symbol& dyn_symbol : binary->imported_symbols()){
       if(!dyn_symbol.name().empty()){
         std::cout << dyn_symbol.name() << std::endl;
         bool end = false;
@@ -288,7 +288,7 @@ int main(int argc, char **argv)
         for(auto &module : modules){
           module_id++;
           library_id++;
-          for (auto &symbol : module->static_symbols())
+          for (auto &symbol : module->exported_symbols())
           {
             if (dyn_symbol.name().compare(symbol.name()) == 0)
             {
