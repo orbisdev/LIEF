@@ -425,6 +425,15 @@ int main(int argc, char **argv)
     }
   }
 
+  DynamicEntry textrel;
+  textrel.tag(DYNAMIC_TAGS::DT_TEXTREL);
+  textrel.value(0);
+  binary->add(textrel);
+
+  DynamicEntryFlags flags;
+  flags.tag(DYNAMIC_TAGS::DT_FLAGS);
+  flags.value(4);
+  binary->add(flags);
 
   binary->write(files[1]);
   
