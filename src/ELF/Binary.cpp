@@ -214,7 +214,7 @@ DynamicEntry& Binary::add(const DynamicEntry& entry) {
       std::begin(this->dynamic_entries_),
       std::end(this->dynamic_entries_),
       [&new_one] (const DynamicEntry* e) {
-        return e->tag() == new_one->tag() or e->tag() == DYNAMIC_TAGS::DT_NULL;
+        return e->tag() == DYNAMIC_TAGS::DT_NULL;
       });
 
   this->dynamic_entries_.insert(it_new_place, new_one);
@@ -1329,7 +1329,7 @@ Section& Binary::extend(const Section& section, uint64_t size) {
   Section* section_to_extend = *it_section;
 
   uint64_t from_offset  = section_to_extend->offset() + section_to_extend->size();
-  uint64_t from_address = section_to_extend->virtual_address() + size;
+  uint64_t from_address = section_to_extend->virtual_address() + section_to_extend->size();
   uint64_t shift        = size;
 
   this->datahandler_->make_hole(
