@@ -74,7 +74,7 @@ int main(int argc, char **argv)
   {
   case E_TYPE::ET_EXEC:
   {
-    binary->header().file_type(LIEF::ELF::E_TYPE::ET_SCE_DYNEXEC);
+    binary->header().file_type(LIEF::ELF::E_TYPE::ET_SCE_EXEC);
     break;
   }
   case E_TYPE::ET_DYN:
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
   binary->add(sce_module_attr_entry);
 
   uint16_t module_id = 0;
-  uint16_t library_id = 1;
+  uint16_t library_id = 0;
 
   bool static_link = false;
 
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 
       DynamicEntryLibrary needed_entry = {};
       needed_entry.tag(DYNAMIC_TAGS::DT_NEEDED);
-      needed_entry.name(module_name + ".sprx");
+      needed_entry.name(module_name + ".prx");
 
       binary->add(needed_entry);
 
@@ -201,11 +201,18 @@ int main(int argc, char **argv)
   }
 
   if(!static_link){
+  
+  std::vector<LIEF::ELF::Symbol> imported_symbols;
 
-    std::vector<std::unique_ptr<LIEF::ELF::Binary>> modules;
-    for (DynamicEntry& dynamic_entry : binary->dynamic_entries())
+  for(Symbol symbol : binary->dynamic_symbols()){
+    if(symbol.is_imported())
+      imported_symbols.push_back(symbol);
+  }
+
+  std::vector<std::unique_ptr<LIEF::ELF::Binary>> modules;
+  for (DynamicEntry& dynamic_entry : binary->dynamic_entries())
   {
-      if(dynamic_entry.tag()==DYNAMIC_TAGS::DT_NEEDED)
+    if(dynamic_entry.tag()==DYNAMIC_TAGS::DT_NEEDED)
     {
 
           std::string soname =  dynamic_cast<DynamicEntryLibrary&>(dynamic_entry).name();
@@ -243,7 +250,7 @@ int main(int argc, char **argv)
 
           stripped = stripped.substr(4);
 
-          dynamic_cast<DynamicEntryLibrary&>(dynamic_entry).name(module_name + ".sprx");
+          dynamic_cast<DynamicEntryLibrary&>(dynamic_entry).name(module_name + ".prx");
 
           DynamicEntryLibrary sce_needed_entry = {};
           sce_needed_entry.tag(DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE);
@@ -271,39 +278,39 @@ int main(int argc, char **argv)
 
           binary->add(sce_import_attr_entry);
 
-          modules.emplace_back(std::move(module));
+          for(auto dyn_symbol = imported_symbols.begin(); dyn_symbol <imported_symbols.end();){
+            if(!(*dyn_symbol).name().empty()){
+              bool end = false;
+              std::cout << (*dyn_symbol).name() << std::endl;
+                for (auto &symbol : module->exported_symbols())
+                {
+                  if ((*dyn_symbol).name().compare(symbol.name()) == 0)
+                  {
+                    uint64_t nid = *(uint64_t *)module->get_content_from_virtual_address(symbol.value(), sizeof(uint64_t)).data();
+                    std::cout << symbol.name() << ":" << encode_nid(nid, module_id, library_id) << std::endl;
+                    binary->get_dynamic_symbol((*dyn_symbol).name()).name(encode_nid(nid, module_id, library_id));
+                    imported_symbols.erase(dyn_symbol);
+                    end = true;
+                    break;
+                  }
+                }
+                if(end){
+                  continue;
+                } else {
+                  ++dyn_symbol;
+                }
 
+              } else {
+              ++dyn_symbol;
+              }
+            } 
 
 
     }
   }
 
     
-    for(Symbol& dyn_symbol : binary->imported_symbols()){
-      if(!dyn_symbol.name().empty()){
-        std::cout << dyn_symbol.name() << std::endl;
-        bool end = false;
-        module_id = 0;
-        library_id = 1;
-        for(auto &module : modules){
-          module_id++;
-          library_id++;
-          for (auto &symbol : module->exported_symbols())
-          {
-            if (dyn_symbol.name().compare(symbol.name()) == 0)
-            {
-              uint64_t nid = *(uint64_t *)module->get_content_from_virtual_address(symbol.value(), sizeof(uint64_t)).data();
-              std::cout << symbol.name() << ":" << encode_nid(nid, module_id, library_id) << std::endl;
-              dyn_symbol.name(encode_nid(nid, module_id, library_id));
-              end = true;
-              break;
-            }
-          }
-          if(end)
-            break;
-        }
-      }
-    }
+    
   }
 
   Section dynstr = binary->get_section(".dynstr");
