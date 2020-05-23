@@ -226,12 +226,15 @@ void Binary::patch_relocations<ARCH::EM_PPC>(uint64_t from, uint64_t shift) {
 template<class T>
 void Binary::patch_addend(Relocation& relocation, uint64_t from, uint64_t shift) {
 
+  if(!shift)
+    return;
+
   if (static_cast<uint64_t>(relocation.addend()) >= from) {
     relocation.addend(relocation.addend() + shift);
   }
 
   const uint64_t address = relocation.address();
-  VLOG(VDEBUG) << "Patch addend relocation at address: 0x" << std::hex << address;
+  VLOG(VDEBUG) << "Patch addend relocation at address: 0x" << std::hex << address << " " << shift;
   Segment& segment = segment_from_virtual_address(address);
   const uint64_t relative_offset = this->virtual_address_to_offset(address) - segment.file_offset();
   std::vector<uint8_t> segment_content = segment.content();
@@ -242,7 +245,7 @@ void Binary::patch_addend(Relocation& relocation, uint64_t from, uint64_t shift)
     return;
   }
 
-  if (relative_offset >= segment_size or (relative_offset + sizeof(T)) >= segment_size) {
+  if (relative_offset > segment_size or (relative_offset + sizeof(T)) > segment_size) {
     VLOG(VDEBUG) << "Offset out of bound for relocation: " << relocation;
     return;
   }
@@ -250,6 +253,7 @@ void Binary::patch_addend(Relocation& relocation, uint64_t from, uint64_t shift)
   T* value = reinterpret_cast<T*>(segment_content.data() + relative_offset);
 
   if (value != nullptr and *value >= from) {
+    VLOG(VDEBUG) << "Patched addend relocation at offset: 0x" << std::hex << relative_offset << " " << shift;
     *value += shift;
   }
 
