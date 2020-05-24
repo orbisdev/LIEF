@@ -209,27 +209,32 @@ int main(int argc, char **argv)
       imported_symbols.push_back(symbol);
   }
 
-  std::vector<std::unique_ptr<LIEF::ELF::Binary>> modules;
+  std::vector<std::reference_wrapper<DynamicEntryLibrary>> dt_needed;
   for (DynamicEntry& dynamic_entry : binary->dynamic_entries())
   {
     if(dynamic_entry.tag()==DYNAMIC_TAGS::DT_NEEDED)
     {
+      dt_needed.push_back(dynamic_cast<DynamicEntryLibrary&>(dynamic_entry));
+    }
+  }
 
-          std::string soname =  dynamic_cast<DynamicEntryLibrary&>(dynamic_entry).name();
+  for(auto dynamic_entry : dt_needed){
+
+          std::string soname = dynamic_entry.get().name();
 
           std::unique_ptr<LIEF::ELF::Binary> module;
 
           for(std::string libpath : paths)  {
              module = LIEF::ELF::Parser::parse(libpath + "/" + soname);
-               std::cout << "Found library in paths: " << libpath + "/" + soname << std::endl;
-
              if(module!=nullptr){
-               break;
+              std::cout << "Found library in paths: " << libpath + "/" + soname << std::endl;
+              break;
              }
           }
 
           if(module==nullptr){
-            std::cout << "Cannot find library in paths: " << soname << std::endl;
+            std::cerr << "Cannot find library in paths: " << soname << std::endl;
+            return 1;
           }
 
           module_id++;
@@ -250,7 +255,7 @@ int main(int argc, char **argv)
 
           stripped = stripped.substr(4);
 
-          dynamic_cast<DynamicEntryLibrary&>(dynamic_entry).name(module_name + ".prx");
+          dynamic_entry.get().name(module_name + ".prx");
 
           DynamicEntryLibrary sce_needed_entry = {};
           sce_needed_entry.tag(DYNAMIC_TAGS::DT_SCE_NEEDED_MODULE);
@@ -305,9 +310,8 @@ int main(int argc, char **argv)
               }
             } 
 
-
+            module.release();
     }
-  }
 
     
     
