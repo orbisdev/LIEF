@@ -57,8 +57,8 @@ int main(int argc, char **argv)
     return 1;
   }
 
-  if(!paths.size() && std::getenv("PS4SDK")){
-    paths.push_back(std::string(std::getenv("PS4SDK")) + "/usr/lib");
+  if(!paths.size() && std::getenv("ORBISDEV")){
+    paths.push_back(std::string(std::getenv("ORBISDEV")) + "/usr/lib");
   } else {
     std::cerr << "Usage: $PS4SDK must be set or use -Lpath/to/lib" << std::endl;
     return 1;
